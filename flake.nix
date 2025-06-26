@@ -1,65 +1,66 @@
 {
-  description = "A Nix flake for running the weron CLI";
+  description = "A Nix flake for building and running the weron CLI";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    weron-src = {
-      url = "github:pojntfx/weron/v0.3.0";
-      flake = false;
-    };
+    # Use 'self' to refer to the current flake's directory as the source.
+    # This is simpler than fetching from GitHub again.
   };
 
-  outputs = { self, nixpkgs, flake-utils, weron-src }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
 
         weronPackage = pkgs.buildGoModule {
           pname = "weron";
+          # The version can be set dynamically or hard-coded.
           version = "0.3.0";
 
-          src = weron-src;
+          # 'src' points to the root of your project directory.
+          src = self;
 
-          # The main package for the weron CLI is in the root of the repository.
-          subPackages = [ "." ];
+          # --- THIS IS THE KEY CORRECTION ---
+          # We point the build to the correct Go package containing main.go
+          subPackages = [ "cmd/weron" ];
 
-          # To get this hash, first use a placeholder like this:
-          # vendorHash = pkgs.lib.fakeSha256;
-          # Then, run 'nix build .#weron'. The build will fail and print the correct hash.
-          # Replace the placeholder with the correct hash.
-          vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          # Nix needs a hash of the Go dependencies for a reproducible build.
+          # The hash below is a placeholder. See the instructions to get the correct one.
+          vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # <--- REPLACE THIS HASH
 
-          # Statically link the binary for portability on systems like Alpine.
+          # Statically link the binary for better portability.
           ldflags = [ "-s" "-w" ];
         };
       in
       {
+        # 'packages' define what can be built or installed.
         packages = {
-          # The default package is the weron binary.
           default = weronPackage;
           weron = weronPackage;
         };
 
+        # 'apps' allow running packages directly with 'nix run'.
         apps = {
-          # The default app runs the weron command.
           default = {
             type = "app";
             program = "${self.packages.${system}.default}/bin/weron";
           };
         };
 
+        # 'devShells' define development environments.
         devShells.default = pkgs.mkShell {
           name = "weron-dev-shell";
 
+          # Tools available in the development shell.
           buildInputs = [
-            weronPackage
-            pkgs.go
+            weronPackage # The 'weron' command itself.
+            pkgs.go      # The Go compiler and tools.
           ];
 
           shellHook = ''
             echo "### weron Development Shell ###"
-            echo "The 'weron' executable (built from local sources) is in your PATH."
+            echo "The 'weron' executable (built from your local source) is in your PATH."
             echo "The Go toolchain is also available."
             echo ""
             echo "You can now run weron commands, for example:"
@@ -67,6 +68,7 @@
           '';
         };
 
+        # Standard formatter for Nix code. Run with 'nix fmt'.
         formatter = pkgs.nixpkgs-fmt;
       }
     );
