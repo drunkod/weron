@@ -27,7 +27,7 @@
 
           # Nix needs a hash of the Go dependencies for a reproducible build.
           # The hash below is a placeholder. See the instructions to get the correct one.
-          vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # <--- REPLACE THIS HASH
+          vendorHash = "sha256-THp5B7+NMDygdnxzsVlcR1ZdVYDDEZMp3sYLif2tLMA="; # <--- REPLACE THIS HASH
 
           # Statically link the binary for better portability.
           ldflags = [ "-s" "-w" ];
