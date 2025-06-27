@@ -1,0 +1,44 @@
+{
+    "name": "NixOS Dev Container",
+  
+    // Start with a standard, minimal image. The 'bookworm' tag is a recent Debian version.
+    "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  
+    // This is the key part: enable the Nix feature.
+    "features": {
+      "ghcr.io/devcontainers/features/nix:1": {
+        // We specify that we want to use our flake file.
+        // The devcontainer feature will automatically run `nix develop`
+        // in the directory of the flake file.
+        "flake": "./.devcontainer"
+      }
+    },
+  
+    // Optional: Forward ports you might need for your application.
+    "forwardPorts": [3000, 8080],
+  
+    // Optional: VS Code settings to apply inside the Codespace.
+    "customizations": {
+      "vscode": {
+        "settings": {
+          "terminal.integrated.defaultProfile.linux": "bash",
+          "terminal.integrated.profiles.linux": {
+            "bash": {
+                "path": "/bin/bash",
+                "args": ["-l"]
+            }
+          }
+        },
+        // Optional: Recommended extensions for your project.
+        "extensions": [
+          "jnoortheen.nix-ide",
+          "GitHub.copilot"
+        ]
+      }
+    },
+  
+    // By default, commands run as the 'vscode' user. If you needed root for a specific setup task,
+    // you could change this, but it's best to stick to the default.
+    "remoteUser": "vscode"
+  }
+  
