@@ -3,6 +3,14 @@
   
     // Start with a standard, minimal image. The 'bookworm' tag is a recent Debian version.
     "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "runArgs": [
+    "--cap-add=NET_ADMIN"
+  ],
+
+  // After creation, use sudo to run setcap.
+  // We will apply the capability to the `ping` executable as an example.
+  // This command runs once when the Codespace is built.
+  "postStartCommand": "mkdir -p /dev/net && mknod /dev/net/tun c 10 200 && chmod 666 /dev/net/tun",
   
     // This is the key part: enable the Nix feature.
     "features": {
@@ -10,7 +18,8 @@
         // We specify that we want to use our flake file.
         // The devcontainer feature will automatically run `nix develop`
         // in the directory of the flake file.
-        "flake": "./.devcontainer"
+        "multiUser": true,
+        "extraNixConfig": "experimental-features = nix-command flakes,keep-outputs = true,keep-derivations = true"
       }
     },
   
